@@ -1,2 +1,2 @@
 #!/bin/sh
-curl $(node convert-github $1) | node . > $2
+curl $(node $(dirname $0)/convert-github $1) | node $(dirname $0) > $2
