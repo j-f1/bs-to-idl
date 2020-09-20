@@ -5,7 +5,9 @@ const state = { inside: false, buf: "" };
 
 const startRe = /^<pre class=(\"?)idl\1>$/;
 
-const readStream = fs.createReadStream(process.argv[2], { encoding: "utf8" });
+const readStream = process.argv[2]
+  ? fs.createReadStream(process.argv[2], { encoding: "utf8" })
+  : process.stdin;
 
 readStream
   .pipe(
