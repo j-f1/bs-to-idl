@@ -3,11 +3,15 @@ const { Transform } = require("stream");
 
 const state = { inside: false, buf: "" };
 
-const startRe = /^<pre class=(\"?)idl\1>$/;
+const startRe =
+  process.argv[3] === "allow-indent"
+    ? /^\s*<(?:pre|xmp) class=(\"?)idl\1>$/
+    : /^<(?:pre|xmp) class=(\"?)idl\1>$/;
 
-const readStream = process.argv[2]
-  ? fs.createReadStream(process.argv[2], { encoding: "utf8" })
-  : process.stdin;
+const readStream =
+  process.argv[2] === "-"
+    ? process.stdin
+    : fs.createReadStream(process.argv[2], { encoding: "utf8" });
 
 function handle(chunk, push) {
   const combined = state.buf + chunk;
@@ -16,11 +20,14 @@ function handle(chunk, push) {
   let line = lines.shift();
   while (line != null) {
     if (state.inside) {
-      if (line === "</pre>") {
+      if (line === "</pre>" || line === "</xmp>") {
         state.inside = false;
       } else if (line.includes("</pre>")) {
         state.inside = false;
         push(line.slice(0, line.indexOf("</pre>")) + "\n");
+      } else if (line.includes("</xmp>")) {
+        state.inside = false;
+        push(line.slice(0, line.indexOf("</xmp>")) + "\n");
       } else {
         push(line + "\n");
       }
