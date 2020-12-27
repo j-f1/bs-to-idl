@@ -4,9 +4,9 @@ const { Transform } = require("stream");
 const state = { inside: false, buf: "" };
 
 const startRe =
-  process.argv[3] === "allow-indent"
-    ? /^\s*<(?:pre|xmp) class=(\"?)idl\1>$/
-    : /^<(?:pre|xmp) class=(\"?)idl\1>$/;
+  process.argv[3] === "noindent"
+    ? /^<(?:pre|xmp) class=(['"]?)idl\1>/
+    : /^\s*<(?:pre|xmp) class=(['"]?)idl\1>/;
 
 const readStream =
   process.argv[2] === "-"
@@ -32,8 +32,12 @@ function handle(chunk, push) {
         push(line + "\n");
       }
     } else {
-      if (startRe.test(line)) {
+      const match = startRe.exec(line);
+      if (match) {
         state.inside = true;
+        if (match.index + match[0].length < line.length) {
+          lines.unshift(line.slice(match.index + match[0].length));
+        }
       }
     }
     line = lines.shift();
@@ -45,7 +49,8 @@ readStream
   .pipe(
     new Transform({
       transform(/** @type {Buffer} */ chunk, _, callback) {
-        const push = (content) => this.push(content.replace(/&lt;/g, "<"));
+        const push = (content) =>
+          this.push(content.replace(/&lt;/g, "<").replace(/&gt;/g, ">"));
         handle(chunk.toString("utf8"), push);
         callback();
       },
