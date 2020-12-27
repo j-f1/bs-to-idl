@@ -5,8 +5,8 @@ const state = { inside: false, buf: "" };
 
 const startRe =
   process.argv[3] === "noindent"
-    ? /^<(?:pre|xmp) class=(['"]?)idl\1>/
-    : /^\s*<(?:pre|xmp) class=(['"]?)idl\1>/;
+    ? /^<(?:pre|xmp) class=(['"]?)idl\1(?: id=(['"]?).*?\2)?>/
+    : /^\s*<(?:pre|xmp) class=(['"]?)idl\1(?: id=(['"]?).*?\2)?>/;
 
 const readStream =
   process.argv[2] === "-"
